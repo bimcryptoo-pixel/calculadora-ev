@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>🎯 Calculadora de EV — Pinnacle × Casa</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #000; }
+  body {
+    color: #e5e7eb; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    max-width: 640px; margin: 0 auto; padding: 16px 14px 40px;
+    -webkit-text-size-adjust: 100%;
+  }
+  h1 { font-size: 22px; font-weight: 900; color: #fff; }
+  .sub { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+  .card {
+    background: #0d0d0f; border: 1px solid #26262b; border-radius: 16px;
+    padding: 16px; margin-top: 16px;
+  }
+  .card h2 { font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: #fff; margin-bottom: 12px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  label { display: block; font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+  input {
+    width: 100%; background: #17171a; border: 1px solid #333338; border-radius: 12px;
+    color: #fff; font-size: 22px; font-weight: 800; padding: 12px; outline: none;
+    -webkit-appearance: none; appearance: none; min-width: 0;
+  }
+  input:focus { border-color: #3b82f6; }
+  input::placeholder { color: #4b5563; }
+  .stake-in { font-size: 18px; }
+  .ev-big { text-align: center; padding: 14px 0 4px; }
+  .ev-big .valor { font-size: 52px; font-weight: 900; line-height: 1; }
+  .ev-big .rotulo { font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: .08em; margin-top: 6px; }
+  .pos { color: #10b981; } .neg { color: #ef4444; } .neutro { color: #9ca3af; }
+  .selo { display: inline-block; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 999px; margin-top: 8px; }
+  .selo.pos { background: rgba(16,185,129,.15); } .selo.neg { background: rgba(239,68,68,.15); }
+  .linhas { margin-top: 12px; }
+  .linha { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-top: 1px solid #1f1f23; font-size: 14px; }
+  .linha .k { color: #9ca3af; } .linha .v { font-weight: 800; color: #fff; white-space: nowrap; }
+  .linha .v.azul { color: #3b82f6; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: #9ca3af; padding: 6px 4px; border-bottom: 1px solid #26262b; }
+  td { padding: 8px 4px; border-bottom: 1px solid #1a1a1e; font-weight: 700; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  th.num { text-align: right; }
+  .par { display: grid; grid-template-columns: 1fr 1fr auto auto; gap: 8px; align-items: center; margin-bottom: 10px; }
+  .par input { font-size: 17px; padding: 10px; }
+  .par .ev { font-size: 16px; font-weight: 900; min-width: 86px; text-align: right; font-variant-numeric: tabular-nums; }
+  .par .del { background: #1c1c20; color: #9ca3af; border: 1px solid #333338; width: 36px; height: 40px; border-radius: 10px; font-size: 15px; cursor: pointer; }
+  .btn {
+    width: 100%; padding: 12px; border-radius: 12px; border: 0; cursor: pointer;
+    font-size: 14px; font-weight: 800; margin-top: 4px;
+  }
+  .btn-azul { background: #2563eb; color: #fff; }
+  .btn-azul:active { background: #1d4ed8; }
+  .btn-cinza { background: #1c1c20; color: #e5e7eb; border: 1px solid #333338; }
+  .btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .nota { font-size: 12px; color: #9ca3af; line-height: 1.55; margin-top: 12px; }
+  .nota b { color: #e5e7eb; }
+  .melhor { outline: 2px solid #f97316; outline-offset: 2px; }
+</style>
+</head>
+<body>
+
+  <h1>🎯 Calculadora de EV</h1>
+  <p class="sub">Pinnacle (preço justo) × casa de aposta — digite as odds e o EV sai na hora.</p>
+
+  <!-- PAR PRINCIPAL -->
+  <div class="card">
+    <h2>Par principal</h2>
+    <div class="grid2">
+      <div>
+        <label for="pin">Odd Pinnacle</label>
+        <input id="pin" inputmode="decimal" autocomplete="off" placeholder="1,80">
+      </div>
+      <div>
+        <label for="casa">Odd da casa</label>
+        <input id="casa" inputmode="decimal" autocomplete="off" placeholder="1,95">
+      </div>
+    </div>
+
+    <div class="ev-big">
+      <div class="valor neutro" id="evValor">—</div>
+      <div class="rotulo">EV (valor esperado)</div>
+      <div><span class="selo neutro" id="evSelo" style="display:none"></span></div>
+    </div>
+
+    <div class="linhas">
+      <div class="linha"><span class="k">Probabilidade implícita (Pinnacle)</span><span class="v" id="prob">—</span></div>
+      <div class="linha"><span class="k">Retorno esperado por R$ 1,00</span><span class="v" id="ret1">—</span></div>
+      <div class="linha"><span class="k">Conta</span><span class="v azul" id="conta">—</span></div>
+    </div>
+
+    <div style="margin-top:14px">
+      <label for="stake">Quanto vou apostar (R$) — opcional</label>
+      <input id="stake" class="stake-in" inputmode="decimal" autocomplete="off" placeholder="1.000">
+    </div>
+    <div class="linhas">
+      <div class="linha"><span class="k">Lucro esperado nessa aposta</span><span class="v" id="lucroStake">—</span></div>
+    </div>
+  </div>
+
+  <!-- ODDS MÍNIMAS -->
+  <div class="card">
+    <h2>🎯 Odd mínima da casa (pela Pinnacle acima)</h2>
+    <table>
+      <thead><tr><th>Meta de EV</th><th class="num">Odd da casa precisa ser</th></tr></thead>
+      <tbody id="minimas">
+        <tr><td>0% (empate)</td><td class="num">—</td></tr>
+        <tr><td>+2%</td><td class="num">—</td></tr>
+        <tr><td>+5%</td><td class="num">—</td></tr>
+        <tr><td>+10%</td><td class="num">—</td></tr>
+      </tbody>
+    </table>
+    <p class="nota">Se a odd da casa estiver <b>acima</b> da linha da sua meta, o par passa dela.</p>
+  </div>
+
+  <!-- VÁRIOS PARES -->
+  <div class="card">
+    <h2>📋 Vários pares</h2>
+    <div id="pares"></div>
+    <div class="btns">
+      <button class="btn btn-azul" id="addPar">+ Adicionar par</button>
+      <button class="btn btn-cinza" id="ordenar">↕️ Ordenar por EV</button>
+    </div>
+    <p class="nota">O par de maior EV ganha o contorno laranja 🟠. Tudo fica salvo neste aparelho.</p>
+  </div>
+
+  <p class="nota" style="margin-top:16px">
+    <b>Como funciona:</b> EV = odd da casa ÷ odd da Pinnacle − 1. A Pinnacle é a referência de preço justo:
+    se a casa paga acima dela, a aposta tem valor esperado positivo no longo prazo. O EV é bruto —
+    descontando a margem dos dois lados ele encolhe um pouco, mas o sinal (positivo/negativo) se mantém
+    na grande maioria dos casos.
+  </p>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  // Valor em R$ (stake): ponto é milhar ("1.000" = 1000), vírgula é decimal.
+  const num = (v) => {
+    if (v === null || v === undefined) return NaN;
+    const n = parseFloat(String(v).trim().replace(/\./g, '').replace(',', '.'));
+    return isNaN(n) ? NaN : n;
+  };
+  const odd = (v) => {
+    if (v === null || v === undefined) return NaN;
+    const t = String(v).trim().replace(',', '.');
+    const n = parseFloat(t);
+    return isNaN(n) ? NaN : n;
+  };
+  const fmtPct = (x) => (x > 0 ? '+' : '') + (x * 100).toFixed(2).replace('.', ',') + '%';
+  const fmtOdd = (x) => x.toFixed(3).replace(/0+$/, '').replace(/\.$/, '').replace('.', ',');
+  const fmtR$ = (x) => x.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+  function evDe(pin, casa) {
+    if (!(pin > 1) || !(casa > 1)) return null;
+    return casa / pin - 1;
+  }
+
+  // ---------- Par principal ----------
+  function calcPrincipal() {
+    const pin = odd($('pin').value);
+    const casa = odd($('casa').value);
+    const ev = evDe(pin, casa);
+    const evEl = $('evValor'), selo = $('evSelo');
+    if (ev === null) {
+      evEl.textContent = '—'; evEl.className = 'valor neutro';
+      selo.style.display = 'none';
+      $('prob').textContent = '—'; $('ret1').textContent = '—'; $('conta').textContent = '—';
+      $('lucroStake').textContent = '—';
+    } else {
+      evEl.textContent = fmtPct(ev);
+      evEl.className = 'valor ' + (ev > 0 ? 'pos' : ev < 0 ? 'neg' : 'neutro');
+      selo.style.display = 'inline-block';
+      selo.className = 'selo ' + (ev > 0 ? 'pos' : 'neg');
+      selo.textContent = ev > 0 ? '✅ EV POSITIVO' : ev < 0 ? '❌ EV NEGATIVO' : '➖ EV ZERO';
+      $('prob').textContent = (100 / pin).toFixed(2).replace('.', ',') + '%';
+      $('ret1').textContent = 'R$ ' + (casa / pin).toFixed(4).replace('.', ',');
+      $('conta').textContent = fmtOdd(casa) + ' ÷ ' + fmtOdd(pin) + ' − 1';
+      const st = num($('stake').value);
+      $('lucroStake').textContent = (!isNaN(st) && st > 0) ? fmtR$(st * ev) : '—';
+      $('lucroStake').className = 'v ' + (ev > 0 ? 'pos' : ev < 0 ? 'neg' : '');
+    }
+    // odds mínimas
+    const metas = [0, 0.02, 0.05, 0.10];
+    const linhas = $('minimas').rows;
+    for (let i = 0; i < metas.length; i++) {
+      linhas[i].cells[1].textContent = (pin > 1) ? fmtOdd(pin * (1 + metas[i])) : '—';
+    }
+    salvar();
+  }
+
+  // ---------- Vários pares ----------
+  function linhaPar(pinV, casaV) {
+    const div = document.createElement('div');
+    div.className = 'par';
+    div.innerHTML =
+      '<input class="p-pin" inputmode="decimal" autocomplete="off" placeholder="Pinnacle">' +
+      '<input class="p-casa" inputmode="decimal" autocomplete="off" placeholder="Casa">' +
+      '<span class="ev neutro">—</span>' +
+      '<button class="del" title="Remover">✕</button>';
+    div.querySelector('.p-pin').value = pinV || '';
+    div.querySelector('.p-casa').value = casaV || '';
+    div.querySelectorAll('input').forEach(inp => inp.addEventListener('input', () => { calcPar(div); salvar(); }));
+    div.querySelector('.del').addEventListener('click', () => { div.remove(); marcarMelhor(); salvar(); });
+    calcPar(div);
+    return div;
+  }
+  function calcPar(div) {
+    const pin = odd(div.querySelector('.p-pin').value);
+    const casa = odd(div.querySelector('.p-casa').value);
+    const ev = evDe(pin, casa);
+    const el = div.querySelector('.ev');
+    div.dataset.ev = (ev === null ? '' : ev);
+    if (ev === null) { el.textContent = '—'; el.className = 'ev neutro'; }
+    else { el.textContent = fmtPct(ev); el.className = 'ev ' + (ev > 0 ? 'pos' : ev < 0 ? 'neg' : 'neutro'); }
+    marcarMelhor();
+  }
+  function marcarMelhor() {
+    const divs = [...document.querySelectorAll('#pares .par')];
+    let melhor = null, maior = -Infinity;
+    divs.forEach(d => {
+      d.classList.remove('melhor');
+      const v = parseFloat(d.dataset.ev);
+      if (!isNaN(v) && v > maior) { maior = v; melhor = d; }
+    });
+    if (melhor && maior > 0) {
+      melhor.querySelector('.p-pin').classList.add('melhor');
+      melhor.querySelector('.p-casa').classList.add('melhor');
+    } else {
+      document.querySelectorAll('#pares input').forEach(i => i.classList.remove('melhor'));
+    }
+  }
+  $('addPar').addEventListener('click', () => { $('pares').appendChild(linhaPar('', '')); salvar(); });
+  $('ordenar').addEventListener('click', () => {
+    const wrap = $('pares');
+    const divs = [...wrap.children];
+    divs.sort((a, b) => {
+      const va = parseFloat(a.dataset.ev), vb = parseFloat(b.dataset.ev);
+      if (isNaN(va) && isNaN(vb)) return 0;
+      if (isNaN(va)) return 1;
+      if (isNaN(vb)) return -1;
+      return vb - va;
+    });
+    divs.forEach(d => wrap.appendChild(d));
+    marcarMelhor(); salvar();
+  });
+
+  // ---------- Persistência local ----------
+  function salvar() {
+    try {
+      const pares = [...document.querySelectorAll('#pares .par')].map(d => ({
+        pin: d.querySelector('.p-pin').value, casa: d.querySelector('.p-casa').value
+      }));
+      localStorage.setItem('calc-ev-v1', JSON.stringify({
+        pin: $('pin').value, casa: $('casa').value, stake: $('stake').value, pares
+      }));
+    } catch (e) {}
+  }
+  function carregar() {
+    let d = null;
+    try { d = JSON.parse(localStorage.getItem('calc-ev-v1') || 'null'); } catch (e) {}
+    if (d) {
+      $('pin').value = d.pin || ''; $('casa').value = d.casa || ''; $('stake').value = d.stake || '';
+      (d.pares && d.pares.length ? d.pares : [{ pin: '', casa: '' }]).forEach(p => $('pares').appendChild(linhaPar(p.pin, p.casa)));
+    } else {
+      $('pares').appendChild(linhaPar('', ''));
+      $('pares').appendChild(linhaPar('', ''));
+    }
+    calcPrincipal();
+  }
+  ['pin', 'casa', 'stake'].forEach(id => $(id).addEventListener('input', calcPrincipal));
+  carregar();
+</script>
+</body>
+</html>
